@@ -1,0 +1,27 @@
+global
+    log /dev/log local0
+    maxconn 2048
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log global
+    mode http
+    option httplog
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+frontend http_front
+    bind *:80
+    redirect scheme https code 301 if !{ ssl_fc }
+
+frontend https_front
+    bind *:443 ssl crt /etc/haproxy/certs/www.mellika.tech.pem
+    default_backend http_back
+
+backend http_back
+    balance roundrobin
+    server 7385-web-01 3.9.115.18:80 check
+    server 7385-web-02 16.60.12.11:80 check
